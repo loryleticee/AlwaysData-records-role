@@ -1,0 +1,58 @@
+# SPDX-License-Identifier: MIT-0
+---
+# - name: print current_item
+#   debug:
+#     msg: "{{ current_item }}"
+
+- name: Get DNS Record
+  ansible.builtin.uri:
+    url: "https://api.alwaysdata.com/v1/record?domain=/v1/domain/{{ current_item.alwaysdata_domain_id }}/"
+    force_basic_auth: true
+    user: "{{ alwaysdata_token }}:"
+    password: ""
+    method: GET
+    status_code: 200
+    body_format: json
+    follow_redirects: all
+    return_content: true
+    headers:
+      Content-Type: 'application/json'
+      Accept: "*/*"
+    # check_mode: false
+  register: dns_records
+  when: "'alwaysdata_domain_id' in current_item"
+
+- name: Set datas variable as json array of pulled records with annotation matches annotation ansible's variable value
+  ansible.builtin.set_fact:
+    datas: >-
+      {{
+        dns_records.json | json_query(query)
+      }}
+  vars:
+    query: "[?annotation=='{{ annotation }}']"
+  when: "'alwaysdata_domain_id' in current_item"
+
+# - name: print datas
+#   debug:
+#     msg: "{{ datas }}"
+
+- name: DELETE DNS Record
+  ansible.builtin.uri:
+    url: "https://api.alwaysdata.com/v1/record/{{ item.id }}/"
+    force_basic_auth: true
+    user: "{{ alwaysdata_token }}:"
+    password: ""
+    method: DELETE
+    status_code: 204
+    body_format: json
+    follow_redirects: all
+    return_content: true
+
+    headers:
+      Content-Type: 'application/json'
+      Accept: "*/*"
+  with_items: "{{ datas }}"
+  when: "'alwaysdata_domain_id' in current_item"
+
+# tasks file for alwaysdata_records
+...

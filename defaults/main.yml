@@ -1,0 +1,23 @@
+# SPDX-License-Identifier: MIT-0
+---
+alwaysdata_token: xxxxxxxxxxxxxxxx #key
+record_type: A
+annotation: ANSIBLE_MANAGED_ITEM
+delete: false
+
+web: "10.0.0.253"
+api: "192.168.0.4"
+
+playload:
+  - key: "example_1"
+    name: "example_1"
+    alwaysdata_domain_id: "107938"
+    dns: web # dns must be declare before with the record value as line 5-6
+
+  - key: "example_2"
+    name: "example_2"
+    alwaysdata_domain_id: "102931"
+    dns: api # dns must be declare before with the record value as line 5-6
+...
+
+# defaults file for alwaysdata
