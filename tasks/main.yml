@@ -24,7 +24,7 @@
     body:
       domain: "{{ item.alwaysdata_domain_id }}"
       type: "{{ record_type }}"
-      name: "{{ item.name }}"
+      name: "{{ item.key }}"
       value: "{{ vars[item.dns] }}"
       ttl: 0
       annotation: "{{ annotation }}"
@@ -32,6 +32,33 @@
   register: dns_records_add
   with_items: "{{ playload }}"
   when: "(not delete) and ('alwaysdata_domain_id' in item)"
+
+- name: CREATE NEW WWW.* RECORDS 
+  ansible.builtin.uri:
+    url: "https://api.alwaysdata.com/v1/record/"
+    force_basic_auth: true
+    user: "{{ alwaysdata_token }}:"
+    password: ""
+    method: POST
+    status_code: 201
+    body_format: json
+    follow_redirects: all
+    return_content: true
+
+    headers:
+      Content-Type: 'application/json'
+      Accept: "*/*"
+    body:
+      domain: "{{ item.alwaysdata_domain_id }}"
+      type: "{{ record_type }}"
+      name: "www.{{ item.key }}"
+      value: "{{ vars[item.dns] }}"
+      ttl: 0
+      annotation: "{{ annotation }}"
+    # validate_certs: false
+  register: dns_records_add
+  with_items: "{{ playload }}"
+  when: "(not delete) and ('alwaysdata_domain_id' in item) and ('www' in item.tag)"
 
 # tasks file for alwaysdata_records
 ...
